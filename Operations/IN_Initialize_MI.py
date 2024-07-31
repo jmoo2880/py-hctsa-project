@@ -25,9 +25,6 @@ def IN_Initialize_MI(estMethod, extraParam=None, addNoise=False):
 
     # Add checks to see whether a jpype JVM has been started.
 
-
-
-
     if estMethod == 'gaussian':
         implementingClass = 'infodynamics.measures.continuous.gaussian'
         miCalc = jp.JPackage(implementingClass).MutualInfoCalculatorMultiVariateGaussian()

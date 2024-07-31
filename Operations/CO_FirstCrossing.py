@@ -1,8 +1,7 @@
-import numpy as np
 from Operations.CO_AutoCorr import CO_AutoCorr
 from PeripheryFunctions.BF_PointOfCrossing import BF_PointOfCrossing
 
-def CO_First_Crossing(y, corr_fun='ac', threshold=0, what_out='both'):
+def CO_FirstCrossing(y, corr_fun='ac', threshold=0, what_out='both'):
     """
     The first crossing of a given autocorrelation across a given threshold.
 
@@ -23,13 +22,10 @@ def CO_First_Crossing(y, corr_fun='ac', threshold=0, what_out='both'):
     out : dict or float
         The first crossing information, format depends on what_out
     """
-
-    N = len(y)  # the length of the time series
-
     # Select the self-correlation function
     if corr_fun == 'ac':
         # Autocorrelation at all time lags
-        corrs = CO_AutoCorr(y, None, 'Fourier')
+        corrs = CO_AutoCorr(y, [], 'Fourier')
     else:
         raise ValueError(f"Unknown correlation function '{corr_fun}'")
 

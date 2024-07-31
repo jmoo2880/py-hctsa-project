@@ -1,8 +1,7 @@
 import numpy as np
-from scipy import signal
 import warnings
 
-def CO_AutoCorr(y, tau=None, method='Fourier'):
+def CO_AutoCorr(y, tau=1, method='Fourier'):
     """
     Compute the autocorrelation of an input time series.
 
@@ -10,10 +9,10 @@ def CO_AutoCorr(y, tau=None, method='Fourier'):
     -----------
     y : array_like
         A scalar time series column vector.
-    tau : int, list, or None, optional
+    tau : int, list, optional
         The time-delay. If tau is a scalar, returns autocorrelation for y at that
         lag. If tau is a list, returns autocorrelations for y at that set of
-        lags. If None, returns the full function for the 'Fourier' estimation method.
+        lags. If empty list, returns the full function for the 'Fourier' estimation method.
     method : str, optional
         The method of computing the autocorrelation: 'Fourier',
         'TimeDomainStat', or 'TimeDomain'.
@@ -28,13 +27,10 @@ def CO_AutoCorr(y, tau=None, method='Fourier'):
     Specifying method = 'TimeDomain' can tolerate NaN values in the time
     series.
     """
-
-    if tau is None:
-        tau = 1  # Use a lag of 1 by default
-    
     N = len(y)  # time-series length
-    
-    if tau is not None:
+
+    if tau:
+        # if list is not empty
         if np.max(tau) > N - 1:  # -1 because acf(1) is lag 0
             warnings.warn(f'Time lag {np.max(tau)} is too long for time-series length {N}')
         if np.any(np.array(tau) < 0):
@@ -49,7 +45,7 @@ def CO_AutoCorr(y, tau=None, method='Fourier'):
         acf = np.real(acf)
         acf = acf[:N]
         
-        if tau is None:  # return the full function
+        if not tau:  # list empty, return the full function
             out = acf
         else:  # return a specific set of values
             tau = np.atleast_1d(tau)
