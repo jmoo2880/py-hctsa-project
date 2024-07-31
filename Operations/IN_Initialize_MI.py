@@ -1,4 +1,7 @@
 import jpype as jp
+import os
+import logging
+import warnings
 
 def IN_Initialize_MI(estMethod, extraParam=None, addNoise=False):
     """
@@ -23,7 +26,15 @@ def IN_Initialize_MI(estMethod, extraParam=None, addNoise=False):
         An initialized mutual information calculator object based on the specified estimation method.
     """
 
-    # Add checks to see whether a jpype JVM has been started.
+    # Check to see whether a jpype JVM has been started.
+    if not jp.isJVMStarted():
+        jarloc = (
+            os.path.dirname(os.path.abspath(__file__)) + "/../Toolboxes/infodynamics-dist/infodynamics.jar"
+        )
+        # change to debug info
+        logging.debug(f"Starting JVM with java class {jarloc}.")
+        jp.startJVM(jp.getDefaultJVMPath(), "-ea", "-Djava.class.path=" + jarloc)
+
 
     if estMethod == 'gaussian':
         implementingClass = 'infodynamics.measures.continuous.gaussian'
@@ -43,6 +54,9 @@ def IN_Initialize_MI(estMethod, extraParam=None, addNoise=False):
     # Add neighest neighbor option for KSG estimator
     if estMethod in ['kraskov1', 'kraskov2']:
         if extraParam != None:
+            if isinstance(extraParam, int):
+                warnings.warn("Number of nearest neighbors needs to be a string. Setting this for you...")
+                extraParam = str(extraParam)
             miCalc.setProperty('k', extraParam) # 4th input specifies number of nearest neighbors for KSG estimator
         else:
             miCalc.setProperty('k', '3') # use 3 nearest neighbors for KSG estimator as default

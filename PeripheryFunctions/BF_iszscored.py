@@ -5,10 +5,12 @@ def BF_iszscored(x):
     Crude check for whether a data vector is z-scored.
 
     Parameters:
-    x (array-like): The input time series (or any vector).
+    -----------
+        x (array-like): The input time series (or any vector).
 
     Returns:
-    iszscored: a bool with the verdict.
+    --------
+        iszscored (bool): a bool with the verdict.
     """
     numericThreshold = 100*np.finfo(float).eps
 
