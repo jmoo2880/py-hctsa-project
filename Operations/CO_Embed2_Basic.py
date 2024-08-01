@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 def co_embed2_basic(y, tau=1):
     """
@@ -96,11 +95,3 @@ def co_embed2_basic(y, tau=1):
         plt.show()
 
     return out
-
-def co_first_crossing(y, method, threshold, interpolation):
-    """
-    Placeholder function for CO_FirstCrossing.
-    This function needs to be implemented separately.
-    """
-    # Implement the logic for finding the first crossing
-    pass
