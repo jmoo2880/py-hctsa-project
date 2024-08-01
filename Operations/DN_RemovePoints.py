@@ -97,7 +97,7 @@ def DN_RemovePoints(y, removeHow = 'absfar', p = 0.1, removeOrSaturate = 'remove
     out['sumabsacfdiff'] = np.sum(np.abs(acf_yTransform - acf_y))
     out['mean'] = np.mean(yTransform)
     out['median'] = np.median(yTransform)
-    out['std'] = np.std(yTransform)
+    out['std'] = np.std(yTransform, ddof=1)
     
     out['skewnessrat'] = stats.skew(yTransform) / stats.skew(y)
     # return kurtosis instead of excess kurtosis

@@ -21,7 +21,7 @@ def DN_Burstiness(y):
     """
     
     mean = np.mean(y)
-    std = np.std(y)
+    std = np.std(y, ddof=1)
 
     r = np.divide(std,mean) # coefficient of variation
     B = np.divide((r - 1), (r + 1)) # Original Goh and Barabasi burstiness statistic, B

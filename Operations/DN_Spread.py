@@ -8,7 +8,7 @@ def DN_Spread(y, spreadMeasure='std'):
     inter-quartile range, mean absolute deviation, or median absolute deviation.
     """
     if spreadMeasure == 'std':
-        out = np.std(y)
+        out = np.std(y, ddof=1)
     elif spreadMeasure == 'iqr':
         out = stats.iqr(y)
     elif spreadMeasure == 'mad':

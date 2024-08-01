@@ -1,6 +1,7 @@
 import numpy as np
+from Operations.CO_FirstCrossing import CO_FirstCrossing
 
-def co_embed2_basic(y, tau=1):
+def CO_Embed2_Basic(y, tau=1):
     """
     Point density statistics in a 2-d embedding space.
 
@@ -20,11 +21,9 @@ def co_embed2_basic(y, tau=1):
         Dictionary containing various point density statistics.
     """
 
-    do_plot = False  # plot outputs to a figure
-
     if tau == 'tau':
         # Make tau the first zero crossing of the autocorrelation function
-        tau = co_first_crossing(y, 'ac', 0, 'discrete')
+        tau = CO_FirstCrossing(y, 'ac', 0, 'discrete')
 
     xt = y[:-tau]  # part of the time series
     xtp = y[tau:]  # time-lagged time series
@@ -84,14 +83,6 @@ def co_embed2_basic(y, tau=1):
     incircle_values = [out['incircle_01'], out['incircle_02'], out['incircle_05'],
                        out['incircle_1'], out['incircle_2'], out['incircle_3']]
     out['medianincircle'] = np.median(incircle_values)
-    out['stdincircle'] = np.std(incircle_values)
-
-    if do_plot:
-        plt.figure(figsize=(10, 8))
-        plt.plot(xt, xtp, '.k')
-        r = (xtp**2 + xt**2 < 0.2)
-        plt.plot(xt[r], xtp[r], '.g')
-        plt.box(on=True)
-        plt.show()
-
+    out['stdincircle'] = np.std(incircle_values, ddof=1)
+    
     return out

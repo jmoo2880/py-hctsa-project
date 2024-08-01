@@ -13,6 +13,6 @@ def DN_Moments(y, theMom):
     Returns:
     out (float): theMom moment of the distribution of the input time series. 
     """
-    out = moment(y, theMom) / np.std(y) # normalized
+    out = moment(y, theMom) / np.std(y, ddof=1) # normalized
 
     return out
