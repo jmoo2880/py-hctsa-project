@@ -20,4 +20,4 @@ def DN_Quantile(y, p=0.5):
     if not isinstance(p, (int, float)) or p < 0 or p > 1:
         raise ValueError("p must specify a proportion, in (0,1)")
     
-    return np.quantile(y, p)
+    return np.quantile(y, p, method='hazen')

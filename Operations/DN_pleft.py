@@ -2,7 +2,7 @@ import numpy as np
 
 def DN_pleft(y, th = 0.1):
     """
-    DN_pleft  Distance from the mean at which a given proportion of data are more distant.
+    Distance from the mean at which a given proportion of data are more distant.
     
     Measures the maximum distance from the mean at which a given fixed proportion, `th`, of the time-series data points are further.
     Normalizes by the standard deviation of the time series.
