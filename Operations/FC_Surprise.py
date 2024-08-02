@@ -1,7 +1,11 @@
 import numpy as np 
 from Operations.SB_CoarseGrain import SB_CoarseGrain
+from PeripheryFunctions.BF_ResetSeed import BF_ResetSeed
+import scipy as sc
+import math
 
-def FC_Surprise(y, whatPrior = 'dist', memory = 0.2, numGroups = 3, coarseGrainMethod = 'quantile', numIters = 500, randomSeed = None):
+def FC_Surprise(y, whatPrior='dist', memory=0.2, numGroups=3, coarseGrainMethod='quantile', 
+                numIters=500, randomSeed=None):
     """
     FC_Surprise   How surprised you would be of the next data point given recent memory.
 
@@ -48,57 +52,90 @@ def FC_Surprise(y, whatPrior = 'dist', memory = 0.2, numGroups = 3, coarseGrainM
         standard deviation.
     """
 
-    y = np.array(y)
-    N = len(y) # time series length
+    if (memory > 0) and (memory < 1): #specify memory as a proportion of the time series length
+        memory = int(np.round(memory*len(y)))
 
-    # specify memory as a proportion of the time-series length
-    if isinstance(memory, float) and (0 < memory < 1):
-        # if float, then must be a proportion of the time series length
-        memory = np.ceil(memory * N)
-    
-    # Course Grain
-    yth = SB_CoarseGrain(y, coarseGrainMethod, numGroups)
-    # Select random samples to test
-    np.random.seed(randomSeed) # control random seed (for reproducibility)
-    rs = np.random.permutation(N - memory) + memory # Can't do beginning of time series, up to memory
-    rs.sort() # Just use a random sample of numIters points to test
-    rs = rs[:min(numIters, len(rs))]
+    # COURSE GRAIN
+    yth = SB_CoarseGrain(y, coarseGrainMethod, numGroups) # a coarse-grained time series using the numbers 1:numgroups
+    N = int(len(yth))
 
-    # Compute empirical probabilities from time series
-    store = np.zeros(len(rs))
-    for i, r in enumerate(rs):
+    #select random samples to test
+    np.random.seed(randomSeed) # set seed for reproducibility
+    rs = np.random.permutation(int(N-memory)) + memory # can't do beginning of time series, up to memory
+    rs = np.sort(rs[0:min(numIters,(len(rs)-1))])
+    rs = np.array([rs]) # made into two dimensional array to match matlab and work with testing code directly below
+
+    # COMPUTE EMPIRICAL PROBABILITIES FROM TIME SERIES
+
+    store = np.zeros([numIters, 1])
+    for i in range(0, rs.size): # rs.size
         if whatPrior == 'dist':
-            p = np.mean(yth[r-memory:r] == yth[r])
+            # uses the distribution up to memory to inform the next point
+            p = np.sum(yth[np.arange(rs[0, i]-memory-1, rs[0, i]-1)] == yth[rs[0, i]-1])/memory # had to be careful with indexing, arange() works like matlab's : operator
+            store[i] = p
         elif whatPrior == 'T1':
-            memory_data = yth[r-memory:r]
-            in_mem = np.where(memory_data[:-1] == yth[r-1])[0]
-            p = np.mean(memory_data[in_mem+1] == yth[r]) if len(in_mem) > 0 else 0
+            # uses one-point correlations in memory to inform the next point
+            # estimate transition probabilites from data in memory
+            # find where in memory this has been observbed before, and preceded it
+            memoryData = yth[rs[0, i] - memory - 1:rs[0, i]-1] # every outputted value should be one less than in matlab
+            # previous data observed in memory here
+            inmem = np.nonzero(memoryData[0:memoryData.size - 1] == yth[rs[0, i]-2])
+            inmem = inmem[0] # nonzero outputs a tuple of two arrays for some reason, the second one of all zeros
+            if inmem.size == 0:
+                p = 0
+            else:
+                p = np.mean(memoryData[inmem + 1] == yth[rs[0, i]-1])
+            store[i] = p
+
         elif whatPrior == 'T2':
-            memory_data = yth[r-memory:r]
-            in_mem1 = np.where(memory_data[1:-1] == yth[r-1])[0]
-            in_mem2 = np.where(memory_data[in_mem1] == yth[r-2])[0]
-            p = np.mean(memory_data[in_mem2+2] == yth[r]) if len(in_mem2) > 0 else 0
+            # uses two point correlations in memory to inform the next point
+            memoryData = yth[rs[0, i] - memory - 1:rs[0, i]-1] # every outputted value should be one less than in matlab
+            inmem1 = np.nonzero(memoryData[1:memoryData.size - 1] == yth[rs[0, i]-2])
+            inmem1 = inmem1[0]
+            inmem2 = np.nonzero(memoryData[inmem1] == yth[rs[0, i]-3])
+            inmem2 = inmem2[0]
+
+            if inmem2.size == 0:
+                p = 0
+            else:
+                p = np.sum(memoryData[inmem2+2] == yth[rs[0, i]-1])/len(inmem2)
+
+            store[i] = p
+
         else:
-            raise ValueError(f"Unknown method '{whatPrior}'")
-        store[i] = p
-
-    # Information gained from next observation is log(1/p) = -log(p)
-    store[store == 0] = 1  # so that we set log(0) == 0
-    store = -np.log(store)  # transform to surprises/information gains
-
-    # Calculate statistics
-    out = {
-        'min': np.min(store[store > 0]) if np.any(store > 0) else np.nan,
-        'max': np.max(store),
-        'mean': np.mean(store),
-        'sum': np.sum(store),
-        'median': np.median(store),
-        'lq': np.quantile(store, 0.25),
-        'uq': np.quantile(store, 0.75),
-        'std': np.std(store, ddof=1)
-    }
+            print("Error: unknown method: " + whatPrior)
+            return
     
-    # t-statistic to information gain of 1
-    out['tstat'] = np.abs((out['mean'] - 1) / (out['std'] / np.sqrt(numIters))) if out['std'] != 0 else np.nan
+    # INFORMATION GAINED FROM NEXT OBSERVATION IS log(1/p) = -log(p)
+    store[store == 0] = 1 # so that we set log[0] == 0
 
-    return out
+    out = {} # dictionary for outputs
+    for i in range(0, len(store)):
+        if store[i] == 0:
+            store[i] = 1
+
+    store = -(np.log(store))
+    #minimum amount of information you can gain in this way
+    if np.any(store > 0):
+        out['min'] = min(store[store > 0]) # find the minimum value in the array, excluding zero
+    else:
+        out['min'] = np.nan
+        
+    # Calculate statistics
+    out['max'] = np.max(store) # maximum amount of information you cna gain in this way
+    out['mean'] = np.mean(store)
+    out['sum'] = np.sum(store)
+    out['median'] = np.median(store)
+    lq = sc.stats.mstats.mquantiles(store, 0.25, alphap=0.5, betap=0.5) # outputs an array of size one
+    out['lq'] = lq[0] #convert array to int
+    uq = sc.stats.mstats.mquantiles(store, 0.75, alphap=0.5, betap=0.5)
+    out['uq'] = uq[0]
+    out['std'] = np.std(store, ddof=1)
+
+    # t-statistic to information gain of 1
+    if out['std'] == 0:
+        out['tstat'] = np.nan
+    else:
+        out['tstat'] = abs((out['mean']-1)/(out['std']/math.sqrt(numIters)))
+
+    return out 
