@@ -5,12 +5,14 @@ def DN_Withinp(x, p = 1, meanOrMedian = 'mean'):
     Proportion of data points within p standard deviations of the mean or median.
 
     Parameters:
+    -----------
     x (array-like): The input data vector
     p (float): The number (proportion) of standard deviations
     meanOrMedian (str): Whether to use units of 'mean' and standard deviation,
                           or 'median' and rescaled interquartile range
 
     Returns:
+    --------
     float: The proportion of data points within p standard deviations
 
     Raises:
