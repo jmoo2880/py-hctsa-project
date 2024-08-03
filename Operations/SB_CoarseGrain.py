@@ -58,12 +58,13 @@ def SB_CoarseGrain(y, howtocg, numGroups):
     
     # Do the coarse graining
     if howtocg == 'quantile':
-        th = np.quantile(y, np.linspace(0, 1, numGroups + 1)) # thresholds for dividing the time-series values
+        th = np.quantile(y, np.linspace(0, 1, numGroups + 1), method='hazen') # thresholds for dividing the time-series values
         th[0] -= 1  # Ensure the first point is included
         # turn the time series into a set of numbers from 1:numGroups
         yth = np.zeros(N, dtype=int)
         for i in range(numGroups):
             yth[(y > th[i]) & (y <= th[i+1])] = i + 1
+
     elif howtocg == 'embed2quadrants': # divides based on quadrants in a 2-D embedding space
         # create alphabet in quadrants -- {1,2,3,4}
         yth = np.zeros(len(m1), dtype=int)
@@ -71,6 +72,7 @@ def SB_CoarseGrain(y, howtocg, numGroups):
         yth[q2r] = 2
         yth[q3r] = 3
         yth[q4r] = 4
+        
     elif howtocg == 'embed2octants': # divide based on octants in 2-D embedding space
         o1r = np.logical_and(q1r, m2 < m1) # points in octant 1
         o2r = np.logical_and(q1r, m2 >= m1) # points in octant 2
