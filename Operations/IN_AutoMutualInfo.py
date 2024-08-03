@@ -14,13 +14,13 @@ def IN_AutoMutualInfo(y, timeDelay=1, estMethod='kernel', extraParam=None):
         Input time series (column vector)
     time_delay : int or list, optional
         Time lag for automutual information calculation (default is 1)
-    est_method : str, optional
+    estMethod : str, optional
         The estimation method used to compute the mutual information:
         - 'gaussian'
         - 'kernel' (default)
         - 'kraskov1'
         - 'kraskov2'
-    extra_param : any, optional
+    extraParam : any, optional
         Extra parameters for the estimation method (default is None)
 
     Returns:
