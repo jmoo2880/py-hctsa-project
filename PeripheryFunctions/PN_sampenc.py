@@ -1,5 +1,7 @@
 import numpy as np
+from numba import jit
 
+@jit(nopython=True)
 def PN_sampenc(y, M = 1, r = None, justM = False):
     """
     Calculate Sample Entropy
@@ -18,7 +20,13 @@ def PN_sampenc(y, M = 1, r = None, justM = False):
         B: Number of matches for m=1,...,M excluding last point
     """
     if r is None:
-        r = 0.1 * np.std(y, ddof=1)
+        # need to manually compute std so everything works with numba...
+        ddof = 1
+        mean_val = np.sum(y) / len(y)
+        squared_diff_sum = np.sum((y - mean_val)**2)
+        variance = squared_diff_sum / (len(y) - ddof)
+        std_val = np.sqrt(variance)
+        r = 0.1 * std_val
     
     N = len(y)
     lastrun = np.zeros(N)
@@ -58,8 +66,7 @@ def PN_sampenc(y, M = 1, r = None, justM = False):
         e[m] = -np.log(p[m])
 
     # Flag to output the entropy and probability just at the maximum requested m
-    if justM:
-        e = e[-1]
-        p = p[-1]
-    
-    return e, p, A, B
+    if justM == True:
+        return np.array([e[-1]]), np.array([p[-1]]), A, B
+    else:
+        return e, p, A, B

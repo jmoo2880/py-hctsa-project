@@ -76,6 +76,6 @@ def SY_LocalGlobal(y, subsetHow = 'l', n = None, randomSeed = 0):
     # use Pearson definition (normal ==> 3.0)
     out['kurtosis'] = np.abs(1 - (kurtosis(y[r], fisher=False)/kurtosis(y, fisher=False)))
     out['ac1'] = np.abs(1 - (CO_AutoCorr(y[r], 1, 'Fourier')[0]/CO_AutoCorr(y, 1, 'Fourier')[0]))
-    out['sampen101'] = PN_sampenc(y[r], 1, 0.1, True)[0]/PN_sampenc(y, 1, 0.1, True)[0]
+    out['sampen101'] = PN_sampenc(y[r], 1, 0.1, True)[0][0]/PN_sampenc(y, 1, 0.1, True)[0][0]
 
     return out
