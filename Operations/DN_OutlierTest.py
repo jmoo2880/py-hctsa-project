@@ -10,6 +10,7 @@ def DN_OutlierTest(y, p = 2, justMe = None):
     transformation.
 
     Parameters:
+    -----------
     y (array-like): The input data vector
     p (float): The percentage of values to remove beyond upper and lower percentiles (default: 2)
     justMe (str, optional): Just returns a number:
@@ -17,6 +18,7 @@ def DN_OutlierTest(y, p = 2, justMe = None):
                             'std' -- returns the std of the middle portion of the data
 
     Returns:
+    --------
     dict or float: A dictionary with 'mean' and 'std' keys, or a single value if justMe is specified
     """
 
