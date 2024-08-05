@@ -4,9 +4,11 @@ from PeripheryFunctions.BF_zscore import BF_zscore
 from PeripheryFunctions.BF_MakeBuffer import BF_MakeBuffer
 import numpy as np 
 
-def EN_mse(y, scaleRange, m = 2, r = 0.15, preProcessHow = None):
+def EN_mse(y, scaleRange = None, m = 2, r = 0.15, preProcessHow = None):
     """
     """
+    if scaleRange is None:
+        scaleRange = range(0, 10)
     minTsLength = 20
     numScales = len(scaleRange)
 

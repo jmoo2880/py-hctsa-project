@@ -45,7 +45,7 @@ def EN_SampEn(y, M = 2, r = None, preProcessHow = None):
         y = BF_PreProcess(y, preProcessHow)
     
     out = {}
-    sampEn, _, _, _ = PN_sampenc(y, M+1)
+    sampEn, _, _, _ = PN_sampenc(y, M+1, r=r)
     # compute outputs 
     for i in range(len(sampEn)):
         out[f"sampen{i}"] = sampEn[i]

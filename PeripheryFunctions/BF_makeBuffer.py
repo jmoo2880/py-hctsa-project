@@ -9,13 +9,13 @@ def BF_MakeBuffer(y, bufferSize):
     ----------
     y : array-like
         The input time series.
-    buffer_size : int
+    bufferSize : int
         The length of each buffer segment.
 
     Returns
     -------
     y_buffer : ndarray
-        2D array where each row is a segment of length `buffer_size` 
+        2D array where each row is a segment of length `bufferSize` 
         corresponding to consecutive, non-overlapping segments of the input time series.
     """
     N = len(y)
