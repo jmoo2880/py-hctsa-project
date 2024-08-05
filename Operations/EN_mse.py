@@ -8,11 +8,11 @@ def EN_mse(y, scaleRange = None, m = 2, r = 0.15, preProcessHow = None):
     """
     """
     if scaleRange is None:
-        scaleRange = range(0, 10)
+        scaleRange = range(1, 11)
     minTsLength = 20
     numScales = len(scaleRange)
 
-    if preProcessHow is None:
+    if preProcessHow is not None:
         y = BF_zscore(BF_PreProcess(y, preProcessHow))
     
     # Coarse-graining across scales
@@ -55,8 +55,8 @@ def EN_mse(y, scaleRange = None, m = 2, r = 0.15, preProcessHow = None):
         'minSampEn': min_samp_en,
         'minScale': scaleRange[min_ind],
         'meanSampEn': np.nanmean(samp_ens),
-        'stdSampEn': np.nanstd(samp_ens),
-        'cvSampEn': np.nanstd(samp_ens) / np.nanmean(samp_ens),
+        'stdSampEn': np.nanstd(samp_ens, ddof=1),
+        'cvSampEn': np.nanstd(samp_ens, ddof=1) / np.nanmean(samp_ens),
         'meanch': np.nanmean(np.diff(samp_ens))
     })
 
