@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def PN_sampenc(y, M = 1, r = None, justM = False):
     """
     Calculate Sample Entropy
@@ -30,23 +29,37 @@ def PN_sampenc(y, M = 1, r = None, justM = False):
     e = np.zeros(M)
 
     # get counting 
-    for i in range(N): # go through each point in the time series, counting matches
+    for i in range(N-1): # go through each point in the time series, counting matches
         y1 = y[i]
-        for jj in range(N):
+        for jj in range(N-i-1):
             # compare to future index, j
-            j = i + jj 
+            j = i + jj + 1
             # this future point, j, matches the time series value at i
             if np.abs(y[j]-y1) < r:
                 run[jj] = lastrun[jj] + 1 # increase run count for this lag
-                M1 = min(M, run[jj])
-                for m in range(M1+1):
-                    A[m] = A[m] + 1
-                    if j < N:
-                        B[m] = B[m] + 1
+                M1 = int(min(M, run[jj]))
+                for m in range(M1):
+                    A[m] += 1
+                    if j < N - 1:
+                        B[m] += 1
             else:
                 run[jj] = 0
-        for j in range(N-i+1):
+        for j in range(N-i-1):
             lastrun[j] = run[j]
-    
+        
+    # Calculate for m = 1
+    NN = N*(N-1)/2
+    p[0] = A[0]/NN
+    e[0] = -np.log(p[0])
 
-    return lastrun, run, A, B
+    # calculate for m > 1, up to M
+    for m in range(1, M):
+        p[m] = A[m]/B[m-1]
+        e[m] = -np.log(p[m])
+
+    # Flag to output the entropy and probability just at the maximum requested m
+    if justM:
+        e = e[-1]
+        p = p[-1]
+    
+    return e, p, A, B
