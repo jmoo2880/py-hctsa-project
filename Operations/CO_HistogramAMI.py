@@ -60,9 +60,12 @@ def CO_HistogramAMI(y, tau = 1, meth = 'even', numBins = 10):
     amis = np.zeros(len(tau))
 
     for i, t in enumerate(tau):
-        y1 = y[:-t]
-        y2 = y[t:]
-
+        if t == 0:
+            # for tau = 0, y1 and y2 are identical to y
+            y1 = y2 = y
+        else:
+            y1 = y[:-t]
+            y2 = y[t:]
         # Joint distribution of y1 and y2
         pij, _, _ = np.histogram2d(y1, y2, bins=(b, b))
         pij = pij[:numBins, :numBins]  # joint
