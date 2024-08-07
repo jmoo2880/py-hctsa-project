@@ -43,7 +43,7 @@ def CO_HistogramAMI(y, tau = 1, meth = 'even', numBins = 10):
         if np.max(y) > 2:
             b = np.concatenate((b, [np.max(y) + 0.1]))
     elif meth == 'quantiles': # use quantiles with ~equal number in each bin
-        b = np.quantile(y, np.linspace(0, 1, numBins + 1))
+        b = np.quantile(y, np.linspace(0, 1, numBins + 1), method='hazen')
         b[0] -= 0.1
         b[-1] += 0.1
     else:
