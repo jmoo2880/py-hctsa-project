@@ -1,8 +1,7 @@
 import numpy as np
-from scipy import stats
 from Operations.CO_FirstCrossing import CO_FirstCrossing
 from Operations.CO_AutoCorr import CO_AutoCorr
-from numpy import histogram_bin_edges
+from Utils.binpicker import binpicker
 
 def CO_Embed2_Shapes(y, tau = 'tau', shape = 'circle', r = 1):
     """
@@ -70,11 +69,13 @@ def CO_Embed2_Shapes(y, tau = 'tau', shape = 'circle', r = 1):
     out['iqronrange'] = out['iqr']/np.ptp(counts)
 
     # distribution - using sqrt binning method
-    edges = histogram_bin_edges(counts, bins='sqrt')
+    numBinsToUse = int(np.ceil(np.sqrt(len(counts)))) # supposed to be what MATLAB uses for 'sqrt' option.
+    minX, maxX = np.min(counts), np.max(counts)
+    binWidthEst = (maxX - minX)/numBinsToUse
+    edges = binpicker(minX, maxX, None, binWidthEst) # mimics the functionality of MATLAB's internal function for selecting bins
     binCounts, binEdges = np.histogram(counts, bins=edges)
     # normalise bin counts
     binCountsNorm = np.divide(binCounts, np.sum(binCounts))
-    print(len(binCountsNorm))
     # get bin centres
     binCentres = (binEdges[:-1] + binEdges[1:]) / 2
     out['mode_val'] = np.max(binCountsNorm)
@@ -86,6 +87,7 @@ def CO_Embed2_Shapes(y, tau = 'tau', shape = 'circle', r = 1):
     afifth = int(np.floor(N/5))
     buffer_m = np.array([counts[i*afifth:(i+1)*afifth] for i in range(5)])
     out['statav5_m'] = np.std(np.mean(buffer_m, axis=1), ddof=1) / np.std(counts, ddof=1)
-    out['statav5_s'] = np.std(np.std(buffer_m, axis=1), ddof=1) / np.std(counts, ddof=1)
+    out['statav5_s'] = np.std(np.std(buffer_m, axis=1, ddof=1), ddof=1) / np.std(counts, ddof=1)
+
 
     return out

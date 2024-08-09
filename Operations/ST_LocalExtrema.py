@@ -94,8 +94,6 @@ def ST_LocalExrema(y, howToWindow = 'l', n = None):
 
     return out
 
-
-
 def _buffer(X, n, p=0, opt=None):
     '''Mimic MATLAB routine to generate buffer array
 
