@@ -28,29 +28,30 @@ def CO_StickAngles(y):
 
     # Split the time series into positive and negative parts
     ix = [np.where(y >= 0)[0], np.where(y < 0)[0]]
-    n = [len(ix_) for ix_ in ix]
+    n = [len(ix[0]), len(ix[1])]
 
     # Compute the stick angles
-    angles = [np.zeros(n_-1) for n_ in n]
+    angles = [[], []]
     for j in range(2):
-        for i in range(n[j]-1):
-            angles[j][i] = (y[ix[j][i+1]] - y[ix[j][i]]) / (ix[j][i+1] - ix[j][i])
-        angles[j] = np.arctan(angles[j])
+        if n[j] > 1:
+            diff_y = np.diff(y[ix[j]])
+            diff_x = np.diff(ix[j])
+            angles[j] = np.arctan(diff_y /diff_x)
     allAngles = np.concatenate(angles)
 
-    # Initialize output dictionary
+    # Initialise output dictionary
     out = {}
-    out['std_p'] = np.std(angles[0], ddof=1)
-    out['mean_p'] = np.mean(angles[0])
-    out['median_p'] = np.median(angles[0])
+    out['std_p'] = np.nanstd(angles[0], ddof=1) 
+    out['mean_p'] = np.nanmean(angles[0]) 
+    out['median_p'] = np.nanmedian(angles[0])
 
-    out['std_n'] = np.std(angles[1], ddof=1)
-    out['mean_n'] = np.mean(angles[1])
-    out['median_n'] = np.median(angles[1])
+    out['std_n'] = np.nanstd(angles[1], ddof=1)
+    out['mean_n'] = np.nanmean(angles[1])
+    out['median_n'] = np.nanmedian(angles[1])
 
-    out['std'] = np.std(allAngles, ddof=1)
-    out['mean'] = np.mean(allAngles)
-    out['median'] = np.median(allAngles)
+    out['std'] = np.nanstd(allAngles, ddof=1)
+    out['mean'] = np.nanmean(allAngles)
+    out['median'] = np.nanmedian(allAngles)
 
     # difference between positive and negative angles
     # return difference in densities
@@ -105,10 +106,10 @@ def CO_StickAngles(y):
         # StatAv5
         out['statav5_p_m'], out['statav5_p_s'] = SUB_statav(zangles[0], 5)
     else:
-        out['statav2_p_m'], out['statav2_p_s'] = np.Nan, np.Nan
-        out['statav3_p_m'], out['statav3_p_s'] = np.Nan, np.Nan
-        out['statav4_p_m'], out['statav4_p_s'] = np.Nan, np.Nan
-        out['statav5_p_m'], out['statav5_p_s'] = np.Nan, np.Nan
+        out['statav2_p_m'], out['statav2_p_s'] = np.NaN, np.NaN
+        out['statav3_p_m'], out['statav3_p_s'] = np.NaN, np.NaN
+        out['statav4_p_m'], out['statav4_p_s'] = np.NaN, np.NaN
+        out['statav5_p_m'], out['statav5_p_s'] = np.NaN, np.NaN
     
     # there are negative angles
     if len(zangles[1]) > 0:
@@ -121,10 +122,10 @@ def CO_StickAngles(y):
         # StatAv5
         out['statav5_n_m'], out['statav5_n_s'] = SUB_statav(zangles[1], 5)
     else:
-        out['statav2_n_m'], out['statav2_n_s'] = np.Nan, np.Nan
-        out['statav3_n_m'], out['statav3_n_s'] = np.Nan, np.Nan
-        out['statav4_n_m'], out['statav4_n_s'] = np.Nan, np.Nan
-        out['statav5_n_m'], out['statav5_n_s'] = np.Nan, np.Nan
+        out['statav2_n_m'], out['statav2_n_s'] = np.NaN, np.NaN
+        out['statav3_n_m'], out['statav3_n_s'] = np.NaN, np.NaN
+        out['statav4_n_m'], out['statav4_n_s'] = np.NaN, np.NaN
+        out['statav5_n_m'], out['statav5_n_s'] = np.NaN, np.NaN
     
     # All angles
     
@@ -139,7 +140,7 @@ def CO_StickAngles(y):
     
     # correlations? 
     if len(zangles[0]) > 0:
-        out['tau_p'] = CO_FirstCrossing(zangles[1], 'ac', 0, 'continuous')
+        out['tau_p'] = CO_FirstCrossing(zangles[0], 'ac', 0, 'continuous')
         out['ac1_p'] = CO_AutoCorr(zangles[0], 1, 'Fourier')[0]
         out['ac2_p'] = CO_AutoCorr(zangles[0], 2, 'Fourier')[0]
     else:
@@ -175,7 +176,7 @@ def CO_StickAngles(y):
         out['kurtosis_n'] = kurtosis(angles[1], fisher=False)
     else:
         out['q1_n'], out['q10_n'], out['q90_n'], out['q99_n'], \
-            out['skewness_n'], out['kurtosis_n'] = np.NaN, np.Nan, np.NaN,  np.NaN, np.NaN, np.NaN
+            out['skewness_n'], out['kurtosis_n'] = np.NaN, np.NaN, np.NaN,  np.NaN, np.NaN, np.NaN
     
     F_quantz = lambda x : np.quantile(zallAngles, x, method='hazen')
     out['q1_all'] = F_quantz(0.01)
@@ -185,12 +186,14 @@ def CO_StickAngles(y):
     out['skewness_all'] = skew(allAngles)
     out['kurtosis_all'] = kurtosis(allAngles, fisher=False)
 
+
+
     return out
 
 def SUB_statav(x, n):
     NN = len(x)
     if NN < 2 * n: # not long enough
-        stateavmean = np.NaN
+        statavmean = np.NaN
         statavstd = np.NaN
     x_buff = _buffer(x, int(np.floor(NN/n)))
     if x_buff.shape[1] > n:
